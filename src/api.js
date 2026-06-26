@@ -1,10 +1,10 @@
 // src/api.js
-// Axios instance — base URL from env, JWT auto-attached.
+// Axios instance — uses relative /api path so Vite's dev proxy handles routing.
 
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: '/api',
 });
 
 // Attach JWT token to every request if present
