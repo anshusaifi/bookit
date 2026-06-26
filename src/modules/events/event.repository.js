@@ -30,7 +30,9 @@ const countConfirmedBookings = (eventId) => {
  * @returns {Promise<{ events: object[], total: number }>}
  */
 const findMany = async ({ search, date, page, limit }) => {
-  const skip = (page - 1) * limit;
+  const pageNum  = parseInt(page,  10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+  const skip = (pageNum - 1) * limitNum;
 
   const where = {};
 
@@ -50,7 +52,7 @@ const findMany = async ({ search, date, page, limit }) => {
     prisma.event.findMany({
       where,
       skip,
-      take:    limit,
+      take:    limitNum,
       orderBy: { eventDate: 'asc' },
       select: {
         id:          true,

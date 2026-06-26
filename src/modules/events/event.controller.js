@@ -9,8 +9,8 @@ const DEFAULT_LIMIT = 10;
 
 const listEvents = async (req, res, next) => {
   try {
-    const page   = req.query.page  || DEFAULT_PAGE;
-    const limit  = req.query.limit || DEFAULT_LIMIT;
+    const page   = parseInt(req.query.page,  10) || DEFAULT_PAGE;
+    const limit  = parseInt(req.query.limit, 10) || DEFAULT_LIMIT;
     const search = req.query.search || undefined;
     const date   = req.query.date   || undefined;
 
