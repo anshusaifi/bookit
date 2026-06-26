@@ -18,32 +18,37 @@ export default function EventsPage() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  const fetchEvents = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const params = { page, limit: PAGE_SIZE };
-      if (search) params.search = search;
-      if (date)   params.date   = date;
+  useEffect(() => {
+    let cancelled = false;
 
-      const res = await api.get('/events', { params });
-      const { events, pagination } = res.data.data;
-      setEvents(events);
-      setTotal(pagination.total);
-    } catch {
-      setError('Failed to load events. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const params = { page, limit: PAGE_SIZE };
+        if (search) params.search = search;
+        if (date)   params.date   = date;
 
-  // Re-fetch whenever page / search / date changes
-  useEffect(() => { fetchEvents(); }, [page, search, date]);
+        const res = await api.get('/events', { params });
+        if (!cancelled) {
+          const { events, pagination } = res.data.data;
+          setEvents(events);
+          setTotal(pagination.total);
+        }
+      } catch {
+        if (!cancelled) setError('Failed to load events. Please try again.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
+  }, [page, search, date]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setPage(1); // reset to first page on new search
-    fetchEvents();
+    setPage(1); // triggers useEffect via page change
   };
 
   const clearFilters = () => {
