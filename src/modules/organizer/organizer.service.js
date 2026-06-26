@@ -33,7 +33,6 @@ const editEvent = async ({ eventId, organizerId, updates }) => {
 
   // If capacity is being reduced, check it won't go below already-booked count
   if (updates.capacity !== undefined) {
-    const { PrismaClient } = require('@prisma/client');
     const prisma = require('../../config/prisma');
 
     const confirmedCount = await prisma.booking.count({
