@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ORGANIZER
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+enum ActivityType {
+  EVENT_VIEWED
+  BOOKING_STARTED
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events       Event[]       @relation("OrganizerEvents")
+  bookings     Booking[]
+  activityLogs ActivityLog[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  venue       String
+  eventDate   DateTime
+  capacity    Int
+  price       Decimal  @db.Decimal(10, 2)
+  
+  organizerId String
+  organizer   User     @relation("OrganizerEvents", fields: [organizerId], references: [id], onDelete: Restrict)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bookings     Booking[]
+  activityLogs ActivityLog[]
+
+  @@index([title])
+  @@index([eventDate])
+  @@index([organizerId, eventDate])
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  status      BookingStatus @default(CONFIRMED)
+  
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  
+  eventId     String
+  event       Event         @relation(fields: [eventId], references: [id], onDelete: Restrict)
+
+  cancelledAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([userId, eventId])
+
+  @@index([eventId, status])
+  @@index([userId, status])
+}
+
+model ActivityLog {
+  id           String       @id @default(cuid())
+  activityType ActivityType
+  
+  userId       String?
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  eventId      String
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Restrict)
+
+  createdAt    DateTime     @default(now())
+
+  @@index([eventId, activityType])
+  @@index([userId])
+  @@index([createdAt])
+}
